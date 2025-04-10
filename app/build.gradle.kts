@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mad_project_2"
+    namespace = "com.example.crapple_maps"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.mad_project_2"
+        applicationId = "com.example.crapple_maps"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

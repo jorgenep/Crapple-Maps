@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MAD-Project-2"
+rootProject.name = "Crapple-Maps"
 include(":app")
  
