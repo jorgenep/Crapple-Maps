@@ -1,4 +1,4 @@
-package com.example.mad_project_2;
+package com.example.crapple_maps;
 
 import android.os.Bundle;
 
