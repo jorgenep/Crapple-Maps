@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Crapple-Maps</string>
+    <string name="welcome_to_crapple_maps">Welcome To Crapple Maps</string>
+    <string name="start_map_mayhem">Start Map Mayhem</string>
+    <string name="roll_the_crapple_dice">Roll The Crapple Dice</string>
+    <string name="filter_trash">Filter Trash</string>
+    <string name="view_legendary_lowlights">View Legendary Lowlights</string>
+    <string name="quit_before_you_regret_it">Quit Before You Regret It</string>
+    <string name="title_activity_maps">MapsActivity</string>
 </resources>
