@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(favoritesIntent);
             finish();
         });
+        //for commiting
 
         quit.setOnClickListener(v -> {
             finishAffinity(); // Closes the app
