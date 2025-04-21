@@ -13,10 +13,6 @@
         android:theme="@style/Theme.CrappleMaps"
         tools:targetApi="31">
         <activity
-            android:name=".Crapple_Recommends"
-            android:exported="false"
-            android:theme="@style/Theme.CrappleMaps" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
