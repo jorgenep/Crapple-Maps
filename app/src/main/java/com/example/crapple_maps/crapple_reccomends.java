@@ -3,6 +3,7 @@ package com.example.crapple_maps;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ public class crapple_reccomends extends AppCompatActivity {
     private TextView name, address, rating, otherInfo;
     private Button getRecommendation;
     private JSONArray restaurantArray;
+    private ImageView crappleImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class crapple_reccomends extends AppCompatActivity {
         rating = findViewById(R.id.ratingView);
         otherInfo = findViewById(R.id.infoView);
         getRecommendation = findViewById(R.id.btnRec);
+        crappleImage = findViewById(R.id.crappleImage);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
