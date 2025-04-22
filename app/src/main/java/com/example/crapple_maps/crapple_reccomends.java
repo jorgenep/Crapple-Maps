@@ -1,22 +1,29 @@
 package com.example.crapple_maps;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,12 +31,16 @@ import java.util.Random;
 
 public class crapple_reccomends extends AppCompatActivity {
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 
-    //ui parts
-    private TextView name, address, rating, otherInfo, types;
-    private Button getRecommendation;
+    // UI components
+    private TextView name, address, rating, otherInfo, typesView;
+    private Button getRecommendation, mainActivityBtn;
     private JSONArray restaurantArray;
     private ImageView crappleImage;
+
+    // Location
+    private FusedLocationProviderClient fusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +48,23 @@ public class crapple_reccomends extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.crapple_reccomends);
 
-        // Set up UI components
+        // UI setup
         name = findViewById(R.id.nameView);
         address = findViewById(R.id.addressView);
         rating = findViewById(R.id.ratingView);
         otherInfo = findViewById(R.id.infoView);
-        types = findViewById(R.id.typesView);
         getRecommendation = findViewById(R.id.btnRec);
+        mainActivityBtn = findViewById(R.id.mainActivityBtn);
         crappleImage = findViewById(R.id.crappleImage);
+        typesView = findViewById(R.id.typesView);
+
+        mainActivityBtn.setOnClickListener(v -> {
+            //startActivity(new Intent(MainActivity.this, CrappleRecommendsActivity.class));
+            Intent randIntent = new Intent(crapple_reccomends.this, MainActivity.class);
+            startActivity(randIntent);
+            finish();
+
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -52,100 +72,130 @@ public class crapple_reccomends extends AppCompatActivity {
             return insets;
         });
 
-        // get restaurant data from API
-        fetchRestaurants();
+        // Location client
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // button listener
-        getRecommendation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayRandomRestaurant();
-            }
-        });
+        // Get location
+        requestLocation();
+
+        // Button listener
+        getRecommendation.setOnClickListener(v -> displayRandomRestaurant());
     }
 
-    //the
-    private void fetchRestaurants() {
-        String url = "please put the URL here";
-        RequestQueue queue = Volley.newRequestQueue(this);
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        restaurantArray = response;
-                        displayRandomRestaurant();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // Handle error (e.g., show a Toast or log the error)
+    private void requestLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            getLastLocation();
+        }
+    }
+
+    private void getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        fetchRestaurants(location);
                     }
                 });
-        queue.add(jsonArrayRequest);
     }
 
-    //to display random restaurant from array that we create from API/JSON
+    private void fetchRestaurants(Location location) {
+        String API_KEY = "AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0";
+        String locationStr = location.getLatitude() + "," + location.getLongitude();
+        int radius = 1500;
+
+        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
+                "?location=" + locationStr +
+                "&radius=" + radius +
+                "&type=restaurant" +
+                "&key=" + API_KEY;
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        restaurantArray = response.getJSONArray("results");
+                        displayRandomRestaurant();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+                    // Log or show error
+                    error.printStackTrace();
+                });
+
+        queue.add(request);
+    }
+
     private void displayRandomRestaurant() {
         if (restaurantArray != null && restaurantArray.length() > 0) {
             Random random = new Random();
-            int randomIndex = random.nextInt(restaurantArray.length());
+            int index = random.nextInt(restaurantArray.length());
             try {
-                JSONObject restaurant = restaurantArray.getJSONObject(randomIndex);
+                JSONObject restaurant = restaurantArray.getJSONObject(index);
+                name.setText(restaurant.optString("name", "N/A"));
+                address.setText(restaurant.optString("vicinity", "N/A"));
+                rating.setText("Overall Rating: " + restaurant.optDouble("rating", 0.0));
+                otherInfo.setText("User Ratings Total: " + restaurant.optInt("user_ratings_total", 0));
 
-                // Set name
-                name.setText(restaurant.optString("name", "Name unavailable"));
-
-                // Set address (vicinity)
-                address.setText(restaurant.optString("vicinity", "Address unavailable"));
-
-                // Set rating
-                if (restaurant.has("rating")) {
-                    rating.setText("Rating: " + restaurant.getDouble("rating"));
-                } else {
-                    rating.setText("Rating not available");
-                }
-
-                // Set open/closed status
-                if (restaurant.has("opening_hours")) {
-                    JSONObject openingHours = restaurant.getJSONObject("opening_hours");
-                    boolean isOpen = openingHours.optBoolean("open_now", false);
-                    otherInfo.setText("Currently: " + (isOpen ? "Open" : "Closed"));
-                } else {
-                    otherInfo.setText("Opening hours not available");
-                }
-
-                // Set types
                 if (restaurant.has("types")) {
                     JSONArray typesArray = restaurant.getJSONArray("types");
                     StringBuilder typesBuilder = new StringBuilder("Types: ");
-                    for (int i = 0; i < typesArray.length(); i++) {
+                    for (int i = 0; i < 3; i++) {
                         typesBuilder.append(typesArray.getString(i));
                         if (i < typesArray.length() - 1) {
                             typesBuilder.append(", ");
                         }
                     }
 
-                    types.setText(typesBuilder.toString());
+                    typesView.setText(typesBuilder.toString());
 
-                }
 
-                // Load photo
-                if (restaurant.has("photos")) {
-                    JSONArray photos = restaurant.getJSONArray("photos");
-                    if (photos.length() > 0) {
-                        JSONObject photo = photos.getJSONObject(0);
-                        String photoRef = photo.getString("photo_reference");
-                        String imageURL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
-                                + photoRef + "&key=YOUR_API_KEY";
+                    // Load photo
+                    if (restaurant.has("photos")) {
+                        JSONArray photos = restaurant.getJSONArray("photos");
+                        if (photos.length() > 0) {
+                            JSONObject photo = photos.getJSONObject(0);
+                            String photoRef = photo.getString("photo_reference");
+                            String imageURL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
+                                    + photoRef + "&key=AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0";
 
-                        Picasso.get().load(imageURL).into(crappleImage);
+                            Picasso.get().load(imageURL).into(crappleImage);
+                        }
                     }
                 }
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    // Handle permission result
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            } else {
+                // Permission denied
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

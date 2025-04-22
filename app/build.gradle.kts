@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.volley)
     implementation(libs.picasso)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
