@@ -12,7 +12,7 @@
         android:id="@+id/btnRec"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="200dp"
+        android:layout_marginBottom="150dp"
         android:text="Reccomend Crapple Restaurant!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,19 +52,31 @@
         android:id="@+id/infoView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="225dp"
+        android:layout_marginTop="26dp"
         android:text="Additional Info"
-        app:layout_constraintBottom_toTopOf="@+id/btnRec"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addressView" />
 
     <ImageView
         android:id="@+id/crappleImage"
         android:layout_width="182dp"
         android:layout_height="185dp"
+        android:layout_marginBottom="25dp"
         app:layout_constraintBottom_toTopOf="@+id/btnRec"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/infoView"
         app:srcCompat="@drawable/logo" />
+
+    <TextView
+        android:id="@+id/typesView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="25dp"
+        android:text="Types"
+        app:layout_constraintBottom_toTopOf="@+id/crappleImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/infoView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

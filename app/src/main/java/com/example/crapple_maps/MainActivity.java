@@ -37,14 +37,14 @@ public class MainActivity extends AppCompatActivity {
         // Set listeners for each button
         btnStart.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, MapsActivity.class));
-            Intent startIntent = new Intent(MainActivity.this, MapsActivity.class)
+            Intent startIntent = new Intent(MainActivity.this, MapsActivity.class);
                     startActivity(startIntent);
             finish();
         });
 
         randLocation.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, CrappleRecommendsActivity.class));
-            Intent randIntent = new Intent(MainActivity.this, CrappleRecommendsActivity.class);
+            Intent randIntent = new Intent(MainActivity.this, crapple_reccomends.class);
             startActivity(randIntent);
             finish();
 
