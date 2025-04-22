@@ -18,6 +18,10 @@
         android:theme="@style/Theme.CrappleMaps"
         tools:targetApi="31">
         <activity
+            android:name=".FilterTrashActivity"
+            android:exported="false"
+            android:label="@style/Theme.CrappleMaps" />
+        <activity
             android:name=".M_Mayhem"
             android:exported="false"
             android:label="@style/Theme.CrappleMaps" />
