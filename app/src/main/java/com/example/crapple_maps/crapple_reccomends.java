@@ -16,6 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -92,6 +93,11 @@ public class crapple_reccomends extends AppCompatActivity {
                 address.setText(restaurant.getString("address"));
                 rating.setText("Overall Rating: " + restaurant.getDouble("rating"));
                 otherInfo.setText(restaurant.getString("otherInfo"));
+
+                String imageURL = restaurant.getString("Image_url");
+                Picasso.get()
+                        .load(imageURL)
+                        .into(crappleImage);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
