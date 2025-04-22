@@ -35,12 +35,12 @@ public class MainActivity extends AppCompatActivity {
         quit = findViewById(R.id.quit);
 
         // Set listeners for each button
-//        btnStart.setOnClickListener(v -> {
-//            //startActivity(new Intent(MainActivity.this, MapsActivity.class));
-//            Intent startIntent = new Intent(MainActivity.this, MapsActivity.class);
-//                    startActivity(startIntent);
-//            finish();
-//        });
+        btnStart.setOnClickListener(v -> {
+            //startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            //Intent startIntent = new Intent(MainActivity.this, MapsActivity.class)
+            //startActivity(startIntent);
+            finish();
+        });
 
         randLocation.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, CrappleRecommendsActivity.class));
@@ -50,19 +50,19 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-//        filterLocations.setOnClickListener(v -> {
-//            //startActivity(new Intent(MainActivity.this, FilterActivity.class));
-//            Intent filterIntent = new Intent(MainActivity.this, FilterActivity.class);
-//            startActivity(filterIntent);
-//            finish();
-//        });
+        filterLocations.setOnClickListener(v -> {
+            //startActivity(new Intent(MainActivity.this, FilterActivity.class));
+            //Intent filterIntent = new Intent(MainActivity.this, FilterActivity.class);
+            //startActivity(filterIntent);
+            finish();
+        });
 
-//        favorites.setOnClickListener(v -> {
-//            //startActivity(new Intent(MainActivity.this, LegendaryLowlightsActivity.class));
-//            Intent favoritesIntent = new Intent(MainActivity.this, LegendaryLowlightsActivity.class);
-//            startActivity(favoritesIntent);
-//            finish();
-//        });
+        favorites.setOnClickListener(v -> {
+            //startActivity(new Intent(MainActivity.this, LegendaryLowlightsActivity.class));
+            //Intent favoritesIntent = new Intent(MainActivity.this, LegendaryLowlightsActivity.class);
+            //startActivity(favoritesIntent);
+            finish();
+        });
         //for commiting
 
         quit.setOnClickListener(v -> {
