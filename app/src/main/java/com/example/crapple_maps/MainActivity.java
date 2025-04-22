@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         filterLocations.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, FilterActivity.class));
-            //Intent filterIntent = new Intent(MainActivity.this, FilterActivity.class);
-            //startActivity(filterIntent);
+            Intent filterIntent = new Intent(MainActivity.this, FilterTrashActivity.class);
+            startActivity(filterIntent);
             finish();
         });
 

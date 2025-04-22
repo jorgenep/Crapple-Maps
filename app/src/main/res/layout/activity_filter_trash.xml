@@ -30,11 +30,30 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="#222"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
-            <CheckBox android:id="@+id/star1" android:text="⭐ 1-Star Trash" />
-            <CheckBox android:id="@+id/star2" android:text="⭐⭐ 2-Star Tragedy" />
-            <CheckBox android:id="@+id/star3" android:text="⭐⭐⭐ 3-Star Mediocre Mess" />
+            <CheckBox
+                android:id="@+id/star1"
+                android:text="⭐ 1-Star Trash"
+                android:contentDescription="1-star restaurant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/star2"
+                android:text="⭐⭐ 2-Star Tragedy"
+                android:contentDescription="2-star restaurant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/star3"
+                android:text="⭐⭐⭐ 3-Star Mediocre Mess"
+                android:contentDescription="3-star restaurant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <!-- 🍽 Cuisine Type -->
             <TextView
@@ -43,14 +62,51 @@
                 android:textStyle="bold"
                 android:textColor="#222"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
-            <CheckBox android:id="@+id/pizza" android:text="🍕 Pizza" />
-            <CheckBox android:id="@+id/sushi" android:text="🍣 Sushi" />
-            <CheckBox android:id="@+id/burgers" android:text="🍔 Burgers" />
-            <CheckBox android:id="@+id/mexican" android:text="🌮 Mexican" />
-            <CheckBox android:id="@+id/chinese" android:text="🍜 Chinese" />
-            <CheckBox android:id="@+id/healthy" android:text="🥗 “Healthy”" />
+            <CheckBox
+                android:id="@+id/pizza"
+                android:text="🍕 Pizza"
+                android:contentDescription="Pizza"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/sushi"
+                android:text="🍣 Sushi"
+                android:contentDescription="Sushi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/burgers"
+                android:text="🍔 Burgers"
+                android:contentDescription="Burgers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/mexican"
+                android:text="🌮 Mexican"
+                android:contentDescription="Mexican"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/chinese"
+                android:text="🍜 Chinese"
+                android:contentDescription="Chinese"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/healthy"
+                android:text="🥗 “Healthy”"
+                android:contentDescription="Healthy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <!-- 📍 Distance Range -->
             <TextView
@@ -59,15 +115,35 @@
                 android:textStyle="bold"
                 android:textColor="#222"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
-            <RadioGroup android:id="@+id/distanceGroup"
+            <RadioGroup
+                android:id="@+id/distanceGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <RadioButton android:id="@+id/distance1" android:text="larger than 1 mile" />
-                <RadioButton android:id="@+id/distance2" android:text="1 to 2 miles" />
-                <RadioButton android:id="@+id/distance3" android:text="2 to 3.5 miles" />
+                <RadioButton
+                    android:id="@+id/distance1"
+                    android:text="larger than 1 mile"
+                    android:contentDescription="Distance larger than 1 mile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <RadioButton
+                    android:id="@+id/distance2"
+                    android:text="1 to 2 miles"
+                    android:contentDescription="Distance between 1 to 2 miles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <RadioButton
+                    android:id="@+id/distance3"
+                    android:text="2 to 3.5 miles"
+                    android:contentDescription="Distance between 2 to 3.5 miles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </RadioGroup>
 
             <!-- 💸 Price Range -->
@@ -77,13 +153,37 @@
                 android:textStyle="bold"
                 android:textColor="#222"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
-            <CheckBox android:id="@+id/price1" android:text="$ - Cheap and Nasty" />
-            <CheckBox android:id="@+id/price2" android:text="$$ - Regret in Every Bite" />
-            <CheckBox android:id="@+id/price3" android:text="$$$ - Painfully Mediocre" />
-            <CheckBox android:id="@+id/price4" android:text="$$$$ - Luxury Disappointment" />
+            <CheckBox
+                android:id="@+id/price1"
+                android:text="$ - Cheap and Nasty"
+                android:contentDescription="Cheap and Nasty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
+            <CheckBox
+                android:id="@+id/price2"
+                android:text="$$ - Regret in Every Bite"
+                android:contentDescription="Regret in Every Bite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/price3"
+                android:text="$$$ - Painfully Mediocre"
+                android:contentDescription="Painfully Mediocre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/price4"
+                android:text="$$$$ - Luxury Disappointment"
+                android:contentDescription="Luxury Disappointment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
 
