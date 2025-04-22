@@ -2,13 +2,12 @@ package com.example.crapple_maps;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.Manifest;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -17,11 +16,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.example.crapple_maps.databinding.ActivityMmayhemBinding;
+import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -31,111 +29,165 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.PipedInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+// Main activity that displays a Google Map and locates nearby food places
 public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
-    private ActivityMmayhemBinding binding;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1; // Permission request code
+    private GoogleMap mMap; // Google Map object
     private FusedLocationProviderClient fusedLocationClient; // Client for accessing location
     private static final String API_KEY = "AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0"; // <-- Replace this with your actual API key
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_mmayhem);
 
+        // Initialize the Places API with the API key if not already done
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), API_KEY);
         }
-        PlacesClient placesClient = Places.createClient(getApplicationContext());
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        binding = ActivityMmayhemBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        // Google Places client
+        PlacesClient placesClient = Places.createClient(this);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Initialize fused location provider
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Get the map fragment and set this activity as the callback when ready
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
+
+    // Retrieve the user's last known location
     private void getLastLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)   {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+        // Check if location permissions are granted
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Request location permission if not granted
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
             return;
         }
+
+        // Fetch last known location
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
+                // If location is available, update map with user location and search for nearby food
                 if (location != null) {
-                    double longitude = location.getLongitude();
                     double latitude = location.getLatitude();
-                    LatLng userLocation = new LatLng(longitude,latitude);
-                    mMap.addMarker(new MarkerOptions().position(userLocation).title("Current Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                    double longitude = location.getLongitude();
+                    LatLng userLocation = new LatLng(latitude, longitude);
+
+                    // Add a blue marker for user's current location
+                    mMap.addMarker(new MarkerOptions()
+                            .position(userLocation)
+                            .title("You are here")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                    // Move camera to user's location with zoom level 15
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
-                    searchFoodNearby(userLocation);
-                }
-                else {
-                    System.out.println("Location not found");
+
+                    // Search for nearby restaurants
+                    searchNearbyFood(userLocation);
+                } else {
+                    Log.d("User Location", "Location is null");
                 }
             }
         });
     }
-    private void searchFoodNearby(LatLng Location) {
-        String locationStr = Location.latitude + "," + Location.longitude;
-        int radius = 3000;
-        String apiUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
+
+    // Search for nearby food places using Places API and plot them on the map
+    private void searchNearbyFood(LatLng location) {
+        String locationStr = location.latitude + "," + location.longitude;
+        int radius = 5000; // Radius in meters
+
+        // Build the URL for the Places API nearby search
+        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                 "?location=" + locationStr +
                 "&radius=" + radius +
                 "&type=restaurant" +
                 "&key=" + API_KEY;
+
+        // Run network operation on a background thread
         new Thread(() -> {
             try {
-                URL apiURL = new URL(apiUrl);
-                HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+                URL apiUrl = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
                 connection.connect();
+
+                // Read the response from the API
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder result = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
                     result.append(line);
                 }
+
+                // Parse the JSON response
                 JSONObject jsonObject = new JSONObject(result.toString());
                 JSONArray results = jsonObject.getJSONArray("results");
 
-                runOnUiThread(()-> {
+                // Update UI on main thread
+                runOnUiThread(() -> {
                     try {
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject place = results.getJSONObject(i);
-                            if (place.has("rating")) {
-                                double rating = place.getDouble("rating");
-                                if (rating >= 3.0) {
-                                    continue;
-                                }
-                            } else {continue;}
-                            JSONObject location = place.getJSONObject("geometry").getJSONObject("location");
+                            Double rating = place.getDouble("rating");
+                            if (rating >= 4.0) {
+                                continue;
+                            }
+                            JSONObject loc = place.getJSONObject("geometry").getJSONObject("location");
                             String name = place.getString("name");
-                            double lat = location.getDouble("lat");
-                            double lng = location.getDouble("lng");
-                            LatLng placeLatLng = new LatLng (lat,lng);
-                            mMap.addMarker(new MarkerOptions().position(placeLatLng).title(name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                            double lat = loc.getDouble("lat");
+                            double lng = loc.getDouble("lng");
+
+                            LatLng placeLatLng = new LatLng(lat, lng);
+
+                            // Add an orange marker for each restaurant found
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(placeLatLng)
+                                    .title(name)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();
     }
 
+    // Called when the map is ready to use
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        getLastLocation();
+        getLastLocation(); // Get and show user location once map is ready
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(@NonNull LatLng latLng) { // This adds a function so when you hold down on the screen it changes the location
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions() // Sets the location to the spot held down on
+                        .position(latLng)
+                        .title("You are here")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                // Move camera to user's location with zoom level 15
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+                // Search for nearby restaurants
+                searchNearbyFood(latLng);
+            }
+        });
     }
+
+    // Handle the result of the location permission request
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

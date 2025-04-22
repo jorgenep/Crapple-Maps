@@ -34,22 +34,35 @@ public class MainActivity extends AppCompatActivity {
         favorites = findViewById(R.id.favorites);
         quit = findViewById(R.id.quit);
 
-        // Set listeners for each button
         btnStart.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            Intent startIntent = new Intent(MainActivity.this, M_Mayhem.class);
+            startActivity(startIntent);
+            finish();
         });
 
         randLocation.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, CrappleRecommendsActivity.class));
+            Intent randIntent = new Intent(MainActivity.this, crapple_reccomends.class);
+            startActivity(randIntent);
+            finish();
+
         });
 
         filterLocations.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, FilterActivity.class));
+            //Intent filterIntent = new Intent(MainActivity.this, FilterActivity.class);
+            //startActivity(filterIntent);
+            finish();
         });
 
         favorites.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, LegendaryLowlightsActivity.class));
+            //Intent favoritesIntent = new Intent(MainActivity.this, LegendaryLowlightsActivity.class);
+            //startActivity(favoritesIntent);
+            finish();
         });
+        //for commiting
 
         quit.setOnClickListener(v -> {
             finishAffinity(); // Closes the app
