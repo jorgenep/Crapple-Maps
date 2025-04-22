@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set listeners for each button
         btnStart.setOnClickListener(v -> {
-            //startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            startActivity(new Intent(MainActivity.this, M_Mayhem.class));
         });
 
         randLocation.setOnClickListener(v -> {
