@@ -144,42 +144,63 @@ public class crapple_reccomends extends AppCompatActivity {
     private void displayRandomRestaurant() {
         if (restaurantArray != null && restaurantArray.length() > 0) {
             Random random = new Random();
-            int index = random.nextInt(restaurantArray.length());
-            try {
-                JSONObject restaurant = restaurantArray.getJSONObject(index);
-                name.setText(restaurant.optString("name", "N/A"));
-                address.setText(restaurant.optString("vicinity", "N/A"));
-                rating.setText("Overall Rating: " + restaurant.optDouble("rating", 0.0));
-                otherInfo.setText("User Ratings Total: " + restaurant.optInt("user_ratings_total", 0));
 
-                if (restaurant.has("types")) {
-                    JSONArray typesArray = restaurant.getJSONArray("types");
-                    StringBuilder typesBuilder = new StringBuilder("Types: ");
-                    for (int i = 0; i < 3; i++) {
-                        typesBuilder.append(typesArray.getString(i));
-                        if (i < typesArray.length() - 1) {
-                            typesBuilder.append(", ");
+            int maxTries = restaurantArray.length();
+            int tries = 0;
+
+            while (tries < maxTries) {
+
+
+                int index = random.nextInt(restaurantArray.length());
+                try {
+                    JSONObject restaurant = restaurantArray.getJSONObject(index);
+                    double restaurantRating = restaurant.optDouble("rating", 0.0);
+
+                    // Skip if rating is higher than 3.5
+                    if (restaurantRating > 3.5) {
+                        tries++;
+                        continue;
+                    }
+
+                    name.setText(restaurant.optString("name", "N/A"));
+                    address.setText(restaurant.optString("vicinity", "N/A"));
+                    rating.setText("Overall Rating: " + restaurant.optDouble("rating", 0.0));
+                    otherInfo.setText("User Ratings Total: " + restaurant.optInt("user_ratings_total", 0));
+
+                    if (restaurant.has("types")) {
+                        JSONArray typesArray = restaurant.getJSONArray("types");
+                        StringBuilder typesBuilder = new StringBuilder("Types: ");
+                        for (int i = 0; i < 3; i++) {
+                            typesBuilder.append(typesArray.getString(i));
+                            if (i < typesArray.length() - 1) {
+                                typesBuilder.append(", ");
+                            }
+                        }
+
+                        typesView.setText(typesBuilder.toString());
+
+
+                        // Load photo
+                        if (restaurant.has("photos")) {
+                            JSONArray photos = restaurant.getJSONArray("photos");
+                            if (photos.length() > 0) {
+                                JSONObject photo = photos.getJSONObject(0);
+                                String photoRef = photo.getString("photo_reference");
+                                String imageURL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
+                                        + photoRef + "&key=AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0";
+
+                                Picasso.get().load(imageURL).into(crappleImage);
+                            }
                         }
                     }
 
-                    typesView.setText(typesBuilder.toString());
+                    break;
 
-
-                    // Load photo
-                    if (restaurant.has("photos")) {
-                        JSONArray photos = restaurant.getJSONArray("photos");
-                        if (photos.length() > 0) {
-                            JSONObject photo = photos.getJSONObject(0);
-                            String photoRef = photo.getString("photo_reference");
-                            String imageURL = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
-                                    + photoRef + "&key=AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0";
-
-                            Picasso.get().load(imageURL).into(crappleImage);
-                        }
-                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+                tries++;
             }
         }
     }
@@ -199,3 +220,4 @@ public class crapple_reccomends extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
+
