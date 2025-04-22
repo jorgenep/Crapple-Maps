@@ -4,10 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,6 +43,8 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap; // Google Map object
     private FusedLocationProviderClient fusedLocationClient; // Client for accessing location
     private static final String API_KEY = "AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0"; // <-- Replace this with your actual API key
+    public TextView clicked;
+    public PointOfInterest poiClicked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +66,7 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+        clicked = findViewById(R.id.clicked);
     }
 
     // Retrieve the user's last known location
@@ -163,6 +170,13 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
             }
         }).start();
     }
+    public void home(View v) {
+        startActivity(new Intent(M_Mayhem.this, MainActivity.class));
+    }
+    public void favorite(View v) {
+        Intent intent = new Intent();
+        intent.putExtra(poiClicked.name,poiClicked.latLng);
+    }
 
     // Called when the map is ready to use
     @Override
@@ -183,6 +197,14 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
 
                 // Search for nearby restaurants
                 searchNearbyFood(latLng);
+            }
+        });
+        mMap.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
+
+            @Override
+            public void onPoiClick(@NonNull PointOfInterest poi) {
+                clicked.setText("Name: "+ poi.name +"\n"+"Location:" + poi.latLng);
+                poiClicked = poi;
             }
         });
     }
