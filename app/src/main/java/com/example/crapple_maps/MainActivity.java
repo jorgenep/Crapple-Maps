@@ -34,11 +34,10 @@ public class MainActivity extends AppCompatActivity {
         favorites = findViewById(R.id.favorites);
         quit = findViewById(R.id.quit);
 
-        // Set listeners for each button
         btnStart.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, MapsActivity.class));
-            //Intent startIntent = new Intent(MainActivity.this, MapsActivity.class)
-            //startActivity(startIntent);
+            Intent startIntent = new Intent(MainActivity.this, M_Mayhem.class);
+            startActivity(startIntent);
             finish();
         });
 

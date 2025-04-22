@@ -220,4 +220,3 @@ public class crapple_reccomends extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
-

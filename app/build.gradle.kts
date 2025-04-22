@@ -45,6 +45,8 @@ dependencies {
     implementation(libs.volley)
     implementation(libs.picasso)
     implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.places)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
