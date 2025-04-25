@@ -312,6 +312,7 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
         mMap.setOnPoiClickListener(poi -> {
             Log.d("POI_CLICK", "Clicked POI: " + poi);
             Toast.makeText(M_Mayhem.this, "POI: " + poi.name, Toast.LENGTH_SHORT).show();
+            clicked.setText("Name: "+ poi.name +"\n"+"Location:" + poi.latLng);
             poiClicked = poi;
         });
     }
