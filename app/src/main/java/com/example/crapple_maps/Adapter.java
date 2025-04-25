@@ -54,11 +54,11 @@ public class Adapter extends BaseAdapter {
         nameTextView.setText(favorite.getName());
 
         // Set up the Delete button for the item
-        //Button deleteButton = view.findViewById(R.id.deleteButton);
-        //deleteButton.setOnClickListener(v -> {
+        Button deleteButton = view.findViewById(R.id.deleteButton);
+        deleteButton.setOnClickListener(v -> {
             // Remove the item from the list
-        //    deleteFavorite(position);
-        //});
+            deleteFavorite(position);
+        });
 
         return view;
     }
