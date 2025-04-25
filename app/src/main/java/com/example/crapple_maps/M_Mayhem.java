@@ -135,21 +135,18 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
         String locationStr = location.latitude + "," + location.longitude;
         int radius = 5000; // Radius in meters
 
-        // Build the URL for the Places API nearby search
         String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                 "?location=" + locationStr +
                 "&radius=" + radius +
                 "&type=restaurant" +
                 "&key=" + API_KEY;
 
-        // Run network operation on a background thread
         new Thread(() -> {
             try {
                 URL apiUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
                 connection.connect();
 
-                // Read the response from the API
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -157,34 +154,28 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                     result.append(line);
                 }
 
-                // Parse the JSON response
                 JSONObject jsonObject = new JSONObject(result.toString());
                 JSONArray results = jsonObject.getJSONArray("results");
 
-                // Update UI on main thread
                 runOnUiThread(() -> {
                     try {
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject place = results.getJSONObject(i);
 
-                            Double rating = place.has("rating") ? place.getDouble("rating") : 0;
+                            // Get rating safely
+                            double rating = place.has("rating") ? place.getDouble("rating") : 0;
 
-                            // If NO filters applied, use original logic
-                            if (selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0) {
-                                if (rating >= 4.0) continue;
-                            } else {
-                                // ⭐ Star Rating Filter
-                                if (!selectedStars.isEmpty() && !selectedStars.contains((int) Math.floor(rating))) {
+                            // ⭐ Star Rating Filter
+                            if (!selectedStars.isEmpty() && !selectedStars.contains((int) Math.floor(rating))) {
+                                continue;
+                            }
+
+                            // 💲 Price Filter
+                            int priceLevel = place.has("price_level") ? place.getInt("price_level") : -1;
+                            if (!selectedPrices.isEmpty()) {
+                                String priceSymbol = priceLevel > 0 ? new String(new char[priceLevel]).replace("\0", "$") : "";
+                                if (!selectedPrices.contains(priceSymbol)) {
                                     continue;
-                                }
-
-                                // 💲 Price Filter
-                                int priceLevel = place.has("price_level") ? place.getInt("price_level") : -1;
-                                if (!selectedPrices.isEmpty()) {
-                                    String priceSymbol = priceLevel > 0 ? new String(new char[priceLevel]).replace("\0", "$") : "";
-                                    if (!selectedPrices.contains(priceSymbol)) {
-                                        continue;
-                                    }
                                 }
                             }
 
@@ -195,33 +186,39 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
 
                             LatLng placeLatLng = new LatLng(lat, lng);
 
-                            // 📏 Distance Filter (only if filters applied)
-                            if (!(selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0)) {
-                                float[] distanceResult = new float[1];
-                                Location.distanceBetween(location.latitude, location.longitude, lat, lng, distanceResult);
-                                double distanceInMiles = distanceResult[0] * 0.000621371;
-                                if (distanceInMiles < minDistance || distanceInMiles > maxDistance) {
-                                    continue;
-                                }
+                            // 📏 Distance Filter
+                            float[] distanceResult = new float[1];
+                            Location.distanceBetween(location.latitude, location.longitude, lat, lng, distanceResult);
+                            double distanceInMiles = distanceResult[0] * 0.000621371;
+                            if (distanceInMiles < minDistance || distanceInMiles > maxDistance) {
+                                continue;
                             }
 
-                            // 🍽 Cuisine Filter (if filters applied)
+                            // 🍽 Cuisine Filter (basic type matching)
                             if (!selectedCuisines.isEmpty()) {
                                 boolean cuisineMatch = false;
-                                JSONArray types = place.getJSONArray("types");
-                                for (int j = 0; j < types.length(); j++) {
-                                    String type = types.getString(j);
-                                    for (String cuisine : selectedCuisines) {
-                                        if (type.toLowerCase().contains(cuisine.toLowerCase())) {
-                                            cuisineMatch = true;
-                                            break;
+                                if (place.has("types")) {
+                                    JSONArray types = place.getJSONArray("types");
+                                    for (int j = 0; j < types.length(); j++) {
+                                        String type = types.getString(j);
+                                        for (String cuisine : selectedCuisines) {
+                                            if (type.toLowerCase().contains(cuisine.toLowerCase())) {
+                                                cuisineMatch = true;
+                                                break;
+                                            }
                                         }
+                                        if (cuisineMatch) break;
                                     }
-                                    if (cuisineMatch) break;
                                 }
                                 if (!cuisineMatch) continue;
                             }
-                            // Add marker if passed all conditions
+
+                            // If NO filters were applied, fallback to original logic
+                            if (selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0) {
+                                if (rating >= 4.0) continue;
+                            }
+
+                            // Add marker if passed all filters
                             mMap.addMarker(new MarkerOptions()
                                     .position(placeLatLng)
                                     .title(name)
@@ -232,12 +229,12 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                     }
                 });
 
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }).start();
     }
+
 
     // Called when the map is ready to use
     @Override
