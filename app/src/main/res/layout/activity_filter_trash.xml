@@ -126,22 +126,28 @@
 
                 <RadioButton
                     android:id="@+id/distance1"
-                    android:text="larger than 1 mile"
+                    android:text="0 to 3 miles"
                     android:contentDescription="Distance larger than 1 mile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
                 <RadioButton
                     android:id="@+id/distance2"
-                    android:text="1 to 2 miles"
+                    android:text="3 to 6 miles"
                     android:contentDescription="Distance between 1 to 2 miles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
                 <RadioButton
                     android:id="@+id/distance3"
-                    android:text="2 to 3.5 miles"
+                    android:text="6 to 9 miles"
                     android:contentDescription="Distance between 2 to 3.5 miles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <RadioButton
+                    android:id="@+id/distance4"
+                    android:text="9 to 100 miles"
+                    android:contentDescription="3.5 to infinity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             </RadioGroup>
