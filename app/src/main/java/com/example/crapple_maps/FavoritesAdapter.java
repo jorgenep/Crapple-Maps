@@ -54,4 +54,4 @@ public class FavoritesAdapter extends BaseAdapter {
         return convertView;
     }
 }
-//this comment is for commiting and pushing
+//this comment is for commiting and pushing. m
