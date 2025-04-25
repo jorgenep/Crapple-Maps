@@ -30,7 +30,6 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 // Main activity that displays a Google Map and locates nearby food places
 public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
@@ -221,11 +221,6 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                                 if (!cuisineMatch) continue;
                             }
 
-                            // If NO filters were applied, fallback to original logic
-                            if (selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0) {
-                                if (rating >= 4.0) continue;
-                            }
-
                             // Add marker if passed all filters
                             mMap.addMarker(new MarkerOptions()
                                     .position(placeLatLng)
@@ -242,44 +237,62 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
             }
         }).start();
     }
+
     public void home(View v) {
         startActivity(new Intent(M_Mayhem.this, MainActivity.class));
     }
+
     public void favorite(View view) {
         if (poiClicked == null) {
             Toast.makeText(this, "No place selected!", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Assuming poiClicked is an object with name, address, and rating fields
         String poiName = poiClicked.name;
+        String poiAddress = poiClicked.placeId;  // Getting the placeId instead of address
+        String poiRating = String.valueOf(poiClicked.latLng.latitude);  // Using latLng as a placeholder for rating
 
         try {
+            // Define the file path
             File file = new File(getFilesDir(), "favorite.json");
             JSONArray favorites;
 
+            // Check if the file exists
             if (file.exists()) {
+                // Open the file for reading
                 BufferedReader reader = new BufferedReader(new InputStreamReader(openFileInput("favorite.json")));
                 StringBuilder jsonBuilder = new StringBuilder();
                 String line;
+
+                // Read the file line by line
                 while ((line = reader.readLine()) != null) {
                     jsonBuilder.append(line);
                 }
                 reader.close();
+
+                // Parse the JSON content into a JSONArray
                 favorites = new JSONArray(jsonBuilder.toString());
             } else {
+                // If the file does not exist, create an empty JSONArray
                 favorites = new JSONArray();
             }
 
             // Add new POI to JSON
             JSONObject newFavorite = new JSONObject();
-            newFavorite.put("name", poiName);
+            newFavorite.put("name", poiName);  // Assuming poiName is a string passed to the method
+            newFavorite.put("address", poiAddress);  // Add address (placeId used here)
+            newFavorite.put("rating", poiRating);  // Add rating
+
+            // Add the new favorite to the JSONArray
             favorites.put(newFavorite);
 
-            // Save to file
+            // Save the updated JSONArray to the file
             FileOutputStream fos = openFileOutput("favorite.json", MODE_PRIVATE);
             fos.write(favorites.toString().getBytes());
             fos.close();
 
+            // Show success message
             Toast.makeText(this, poiName + " added to favorites!", Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
@@ -287,7 +300,6 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
             Toast.makeText(this, "Failed to save favorite.", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     // Called when the map is ready to use
     @Override
@@ -322,12 +334,10 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            // If permission granted, get the location
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getLastLocation();
             } else {
-                // Otherwise, notify the user that permission is required
-                Toast.makeText(this, "Location permission is required to show your location.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
