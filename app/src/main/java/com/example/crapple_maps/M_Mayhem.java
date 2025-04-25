@@ -9,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -30,6 +33,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -41,6 +46,8 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap; // Google Map object
     private FusedLocationProviderClient fusedLocationClient; // Client for accessing location
     private static final String API_KEY = "AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0"; // <-- Replace this with your actual API key
+    public TextView clicked;
+    public PointOfInterest poiClicked;
 
     private ArrayList<Integer> selectedStars;
     private ArrayList<String> selectedCuisines;
@@ -90,6 +97,7 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+        clicked = findViewById(R.id.clicked);
     }
 
     // Retrieve the user's last known location
@@ -234,6 +242,51 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
             }
         }).start();
     }
+    public void home(View v) {
+        startActivity(new Intent(M_Mayhem.this, MainActivity.class));
+    }
+    public void favorite(View view) {
+        if (poiClicked == null) {
+            Toast.makeText(this, "No place selected!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String poiName = poiClicked.name;
+
+        try {
+            File file = new File(getFilesDir(), "favorite.json");
+            JSONArray favorites;
+
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(openFileInput("favorite.json")));
+                StringBuilder jsonBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonBuilder.append(line);
+                }
+                reader.close();
+                favorites = new JSONArray(jsonBuilder.toString());
+            } else {
+                favorites = new JSONArray();
+            }
+
+            // Add new POI to JSON
+            JSONObject newFavorite = new JSONObject();
+            newFavorite.put("name", poiName);
+            favorites.put(newFavorite);
+
+            // Save to file
+            FileOutputStream fos = openFileOutput("favorite.json", MODE_PRIVATE);
+            fos.write(favorites.toString().getBytes());
+            fos.close();
+
+            Toast.makeText(this, poiName + " added to favorites!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to save favorite.", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
     // Called when the map is ready to use
@@ -250,12 +303,16 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                         .title("You are here")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
 
-                // Move camera to user's location with zoom level 15
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
 
                 // Search for nearby restaurants
                 searchNearbyFood(latLng);
             }
+        });
+        mMap.setOnPoiClickListener(poi -> {
+            Log.d("POI_CLICK", "Clicked POI: " + poi);
+            Toast.makeText(M_Mayhem.this, "POI: " + poi.name, Toast.LENGTH_SHORT).show();
+            poiClicked = poi;
         });
     }
 
