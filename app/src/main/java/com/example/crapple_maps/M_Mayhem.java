@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -31,6 +30,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,22 +49,50 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     public TextView clicked;
     public PointOfInterest poiClicked;
 
+    private ArrayList<Integer> selectedStars;
+    private ArrayList<String> selectedCuisines;
+    private ArrayList<String> selectedPrices;
+    private double minDistance = 0;
+    private double maxDistance = Double.MAX_VALUE;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mmayhem);
 
+        Intent intent = getIntent();
+
+        // Check if filters exist in the Intent
+        if (intent.hasExtra("selectedStars")) {
+            selectedStars = intent.getIntegerArrayListExtra("selectedStars");
+        } else {
+            selectedStars = new ArrayList<>();
+        }
+
+        if (intent.hasExtra("selectedCuisines")) {
+            selectedCuisines = intent.getStringArrayListExtra("selectedCuisines");
+        } else {
+            selectedCuisines = new ArrayList<>();
+        }
+
+        if (intent.hasExtra("selectedPrices")) {
+            selectedPrices = intent.getStringArrayListExtra("selectedPrices");
+        } else {
+            selectedPrices = new ArrayList<>();
+        }
+
+        minDistance = intent.getDoubleExtra("minDistance", 0);
+        maxDistance = intent.getDoubleExtra("maxDistance", Double.MAX_VALUE);
+
         // Initialize the Places API with the API key if not already done
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), API_KEY);
         }
-        // Google Places client
-        PlacesClient placesClient = Places.createClient(this);
 
-        // Initialize fused location provider
+        PlacesClient placesClient = Places.createClient(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Get the map fragment and set this activity as the callback when ready
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         assert mapFragment != null;
@@ -115,21 +143,18 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
         String locationStr = location.latitude + "," + location.longitude;
         int radius = 5000; // Radius in meters
 
-        // Build the URL for the Places API nearby search
         String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                 "?location=" + locationStr +
                 "&radius=" + radius +
                 "&type=restaurant" +
                 "&key=" + API_KEY;
 
-        // Run network operation on a background thread
         new Thread(() -> {
             try {
                 URL apiUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
                 connection.connect();
 
-                // Read the response from the API
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder result = new StringBuilder();
                 String line;
@@ -137,19 +162,31 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                     result.append(line);
                 }
 
-                // Parse the JSON response
                 JSONObject jsonObject = new JSONObject(result.toString());
                 JSONArray results = jsonObject.getJSONArray("results");
 
-                // Update UI on main thread
                 runOnUiThread(() -> {
                     try {
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject place = results.getJSONObject(i);
-                            Double rating = place.getDouble("rating");
-                            if (rating >= 4.0) {
+
+                            // Get rating safely
+                            double rating = place.has("rating") ? place.getDouble("rating") : 0;
+
+                            // ⭐ Star Rating Filter
+                            if (!selectedStars.isEmpty() && !selectedStars.contains((int) Math.floor(rating))) {
                                 continue;
                             }
+
+                            // 💲 Price Filter
+                            int priceLevel = place.has("price_level") ? place.getInt("price_level") : -1;
+                            if (!selectedPrices.isEmpty()) {
+                                String priceSymbol = priceLevel > 0 ? new String(new char[priceLevel]).replace("\0", "$") : "";
+                                if (!selectedPrices.contains(priceSymbol)) {
+                                    continue;
+                                }
+                            }
+
                             JSONObject loc = place.getJSONObject("geometry").getJSONObject("location");
                             String name = place.getString("name");
                             double lat = loc.getDouble("lat");
@@ -157,7 +194,39 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
 
                             LatLng placeLatLng = new LatLng(lat, lng);
 
-                            // Add an orange marker for each restaurant found
+                            // 📏 Distance Filter
+                            float[] distanceResult = new float[1];
+                            Location.distanceBetween(location.latitude, location.longitude, lat, lng, distanceResult);
+                            double distanceInMiles = distanceResult[0] * 0.000621371;
+                            if (distanceInMiles < minDistance || distanceInMiles > maxDistance) {
+                                continue;
+                            }
+
+                            // 🍽 Cuisine Filter (basic type matching)
+                            if (!selectedCuisines.isEmpty()) {
+                                boolean cuisineMatch = false;
+                                if (place.has("types")) {
+                                    JSONArray types = place.getJSONArray("types");
+                                    for (int j = 0; j < types.length(); j++) {
+                                        String type = types.getString(j);
+                                        for (String cuisine : selectedCuisines) {
+                                            if (type.toLowerCase().contains(cuisine.toLowerCase())) {
+                                                cuisineMatch = true;
+                                                break;
+                                            }
+                                        }
+                                        if (cuisineMatch) break;
+                                    }
+                                }
+                                if (!cuisineMatch) continue;
+                            }
+
+                            // If NO filters were applied, fallback to original logic
+                            if (selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0) {
+                                if (rating >= 4.0) continue;
+                            }
+
+                            // Add marker if passed all filters
                             mMap.addMarker(new MarkerOptions()
                                     .position(placeLatLng)
                                     .title(name)
@@ -218,6 +287,7 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
             Toast.makeText(this, "Failed to save favorite.", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Called when the map is ready to use
     @Override
