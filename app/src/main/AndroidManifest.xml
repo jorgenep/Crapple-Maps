@@ -16,9 +16,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CrappleMaps"
         tools:targetApi="31">
+
+        <!-- Main Activity (MainActivity) -->
         <activity
-            android:name=".LegendaryLowlightsActivity"
-            android:exported="false" />
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true"
+            android:theme="@style/Theme.CrappleMaps">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Favorite Activity -->
+        <activity
+            android:name=".FavoriteActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="false"
+            android:label="@string/title_activity_favorites"
+            android:theme="@style/Theme.CrappleMaps.Fullscreen" />
+
+        <!-- Other Activities -->
         <activity
             android:name=".FilterTrashActivity"
             android:exported="false"
@@ -31,15 +50,6 @@
             android:name=".crapple_reccomends"
             android:exported="false"
             android:theme="@style/Theme.CrappleMaps" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

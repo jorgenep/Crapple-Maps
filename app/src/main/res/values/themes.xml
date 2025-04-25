@@ -6,4 +6,16 @@
     </style>
 
     <style name="Theme.CrappleMaps" parent="Base.Theme.CrappleMaps" />
+
+    <style name="Theme.CrappleMaps.Fullscreen" parent="Theme.CrappleMaps">
+        <item name="android:actionBarStyle">@style/Widget.Theme.CrappleMaps.ActionBar.Fullscreen
+        </item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="ThemeOverlay.CrappleMaps.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
+        <item name="fullscreenTextColor">@color/light_blue_A200</item>
+    </style>
 </resources>

@@ -58,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
         favorites.setOnClickListener(v -> {
             //startActivity(new Intent(MainActivity.this, LegendaryLowlightsActivity.class));
-            //Intent favoritesIntent = new Intent(MainActivity.this, LegendaryLowlightsActivity.class);
-            //startActivity(favoritesIntent);
+            Intent favoritesIntent = new Intent(MainActivity.this, FavoriteActivity.class);
+            startActivity(favoritesIntent);
             finish();
         });
         //for commiting

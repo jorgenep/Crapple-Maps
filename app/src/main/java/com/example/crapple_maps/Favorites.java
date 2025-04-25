@@ -5,14 +5,12 @@ public class Favorites {
     private String address;
     private String rating;
 
-    // Constructor
     public Favorites(String name, String address, String rating) {
         this.name = name;
         this.address = address;
         this.rating = rating;
     }
 
-    // Getters
     public String getName() {
         return name;
     }
