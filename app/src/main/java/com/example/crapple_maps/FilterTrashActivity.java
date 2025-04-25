@@ -72,8 +72,19 @@ public class FilterTrashActivity extends AppCompatActivity {
             int selectedDistanceId = distanceGroup.getCheckedRadioButtonId();
             if (selectedDistanceId != -1) {
                 RadioButton selectedDistance = findViewById(selectedDistanceId);
-                intent.putExtra("selectedDistance", selectedDistance.getText().toString());
+                String distanceText = selectedDistance.getText().toString();  // e.g., "9 to 100 miles"
+
+                // Remove " miles" and split
+                distanceText = distanceText.replace(" miles", "").trim();  // "9 to 100"
+                String[] parts = distanceText.split(" to ");
+
+                double minDistance = Double.parseDouble(parts[0]);  // 9.0
+                double maxDistance = Double.parseDouble(parts[1]);  // 100.0
+
+                intent.putExtra("minDistance", minDistance);
+                intent.putExtra("maxDistance", maxDistance);
             }
+
 
             ArrayList<String> selectedPrices = new ArrayList<>();
             if (price1.isChecked()) selectedPrices.add("$");
