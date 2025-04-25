@@ -50,7 +50,7 @@ public class FilterTrashActivity extends AppCompatActivity {
         applyFiltersButton = findViewById(R.id.applyFiltersButton);
 
         applyFiltersButton.setOnClickListener(v -> {
-            Intent intent = new Intent(FilterTrashActivity.this, MainActivity.class); // Replace with your target activity
+            Intent intent = new Intent(FilterTrashActivity.this, M_Mayhem.class); // Replace with your target activity
 
             // ⭐ Star rating filters
             ArrayList<Integer> selectedStars = new ArrayList<>();

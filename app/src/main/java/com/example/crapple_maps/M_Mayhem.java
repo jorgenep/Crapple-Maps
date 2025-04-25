@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -32,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -173,9 +176,47 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     public void home(View v) {
         startActivity(new Intent(M_Mayhem.this, MainActivity.class));
     }
-    public void favorite(View v) {
-        Intent intent = new Intent();
-        intent.putExtra(poiClicked.name,poiClicked.latLng);
+    public void favorite(View view) {
+        if (poiClicked == null) {
+            Toast.makeText(this, "No place selected!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String poiName = poiClicked.name;
+
+        try {
+            File file = new File(getFilesDir(), "favorite.json");
+            JSONArray favorites;
+
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(openFileInput("favorite.json")));
+                StringBuilder jsonBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonBuilder.append(line);
+                }
+                reader.close();
+                favorites = new JSONArray(jsonBuilder.toString());
+            } else {
+                favorites = new JSONArray();
+            }
+
+            // Add new POI to JSON
+            JSONObject newFavorite = new JSONObject();
+            newFavorite.put("name", poiName);
+            favorites.put(newFavorite);
+
+            // Save to file
+            FileOutputStream fos = openFileOutput("favorite.json", MODE_PRIVATE);
+            fos.write(favorites.toString().getBytes());
+            fos.close();
+
+            Toast.makeText(this, poiName + " added to favorites!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to save favorite.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Called when the map is ready to use
@@ -192,20 +233,16 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                         .title("You are here")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
 
-                // Move camera to user's location with zoom level 15
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
 
                 // Search for nearby restaurants
                 searchNearbyFood(latLng);
             }
         });
-        mMap.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
-
-            @Override
-            public void onPoiClick(@NonNull PointOfInterest poi) {
-                clicked.setText("Name: "+ poi.name +"\n"+"Location:" + poi.latLng);
-                poiClicked = poi;
-            }
+        mMap.setOnPoiClickListener(poi -> {
+            Log.d("POI_CLICK", "Clicked POI: " + poi);
+            Toast.makeText(M_Mayhem.this, "POI: " + poi.name, Toast.LENGTH_SHORT).show();
+            poiClicked = poi;
         });
     }
 
