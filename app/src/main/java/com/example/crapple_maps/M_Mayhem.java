@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -40,22 +42,50 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
     private FusedLocationProviderClient fusedLocationClient; // Client for accessing location
     private static final String API_KEY = "AIzaSyCp_DPsej9a2x_WWTlfPE5tSVr1DrqnFw0"; // <-- Replace this with your actual API key
 
+    private ArrayList<Integer> selectedStars;
+    private ArrayList<String> selectedCuisines;
+    private ArrayList<String> selectedPrices;
+    private double minDistance = 0;
+    private double maxDistance = Double.MAX_VALUE;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mmayhem);
 
+        Intent intent = getIntent();
+
+        // Check if filters exist in the Intent
+        if (intent.hasExtra("selectedStars")) {
+            selectedStars = intent.getIntegerArrayListExtra("selectedStars");
+        } else {
+            selectedStars = new ArrayList<>();
+        }
+
+        if (intent.hasExtra("selectedCuisines")) {
+            selectedCuisines = intent.getStringArrayListExtra("selectedCuisines");
+        } else {
+            selectedCuisines = new ArrayList<>();
+        }
+
+        if (intent.hasExtra("selectedPrices")) {
+            selectedPrices = intent.getStringArrayListExtra("selectedPrices");
+        } else {
+            selectedPrices = new ArrayList<>();
+        }
+
+        minDistance = intent.getDoubleExtra("minDistance", 0);
+        maxDistance = intent.getDoubleExtra("maxDistance", Double.MAX_VALUE);
+
         // Initialize the Places API with the API key if not already done
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), API_KEY);
         }
-        // Google Places client
-        PlacesClient placesClient = Places.createClient(this);
 
-        // Initialize fused location provider
+        PlacesClient placesClient = Places.createClient(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Get the map fragment and set this activity as the callback when ready
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         assert mapFragment != null;
@@ -136,10 +166,28 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                     try {
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject place = results.getJSONObject(i);
-                            Double rating = place.getDouble("rating");
-                            if (rating >= 4.0) {
-                                continue;
+
+                            Double rating = place.has("rating") ? place.getDouble("rating") : 0;
+
+                            // If NO filters applied, use original logic
+                            if (selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0) {
+                                if (rating >= 4.0) continue;
+                            } else {
+                                // ⭐ Star Rating Filter
+                                if (!selectedStars.isEmpty() && !selectedStars.contains((int) Math.floor(rating))) {
+                                    continue;
+                                }
+
+                                // 💲 Price Filter
+                                int priceLevel = place.has("price_level") ? place.getInt("price_level") : -1;
+                                if (!selectedPrices.isEmpty()) {
+                                    String priceSymbol = priceLevel > 0 ? new String(new char[priceLevel]).replace("\0", "$") : "";
+                                    if (!selectedPrices.contains(priceSymbol)) {
+                                        continue;
+                                    }
+                                }
                             }
+
                             JSONObject loc = place.getJSONObject("geometry").getJSONObject("location");
                             String name = place.getString("name");
                             double lat = loc.getDouble("lat");
@@ -147,7 +195,33 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
 
                             LatLng placeLatLng = new LatLng(lat, lng);
 
-                            // Add an orange marker for each restaurant found
+                            // 📏 Distance Filter (only if filters applied)
+                            if (!(selectedStars.isEmpty() && selectedCuisines.isEmpty() && selectedPrices.isEmpty() && minDistance == 0)) {
+                                float[] distanceResult = new float[1];
+                                Location.distanceBetween(location.latitude, location.longitude, lat, lng, distanceResult);
+                                double distanceInMiles = distanceResult[0] * 0.000621371;
+                                if (distanceInMiles < minDistance || distanceInMiles > maxDistance) {
+                                    continue;
+                                }
+                            }
+
+                            // 🍽 Cuisine Filter (if filters applied)
+                            if (!selectedCuisines.isEmpty()) {
+                                boolean cuisineMatch = false;
+                                JSONArray types = place.getJSONArray("types");
+                                for (int j = 0; j < types.length(); j++) {
+                                    String type = types.getString(j);
+                                    for (String cuisine : selectedCuisines) {
+                                        if (type.toLowerCase().contains(cuisine.toLowerCase())) {
+                                            cuisineMatch = true;
+                                            break;
+                                        }
+                                    }
+                                    if (cuisineMatch) break;
+                                }
+                                if (!cuisineMatch) continue;
+                            }
+                            // Add marker if passed all conditions
                             mMap.addMarker(new MarkerOptions()
                                     .position(placeLatLng)
                                     .title(name)
@@ -157,6 +231,7 @@ public class M_Mayhem extends FragmentActivity implements OnMapReadyCallback {
                         e.printStackTrace();
                     }
                 });
+
 
             } catch (Exception e) {
                 e.printStackTrace();
